@@ -1,0 +1,85 @@
+plugins {
+	id 'org.springframework.boot' version '2.3.5.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'java-library'
+  id 'jacoco'
+}
+
+group = 'com.shinstealer.spring.webflux'
+version = '1.0.0'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	jcenter()
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+  implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.8.1'
+  implementation 'commons-codec:commons-codec:1.15'
+
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+  testImplementation 'org.hamcrest:hamcrest:2.2'
+
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+def defaultEncoding = 'UTF-8'
+tasks.withType(AbstractCompile).each {
+    it.options.encoding = defaultEncoding
+    //警告の詳細を表示させる
+    it.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+tasks.withType(GroovyCompile).each {
+    it.groovyOptions.encoding = defaultEncoding
+}
+
+javadoc {
+    options.charSet = defaultEncoding
+    options.encoding = defaultEncoding
+}
+
+jacocoTestReport {
+    reports {
+        html {
+            enabled true
+        }
+    }
+    afterEvaluate {
+        classDirectories.from = files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    include: [
+                            '**/controller/**',
+                            '**/service/**'
+                    ])
+        })
+    }
+}
