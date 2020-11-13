@@ -12,12 +12,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @RestController
 @Slf4j
+@RequestMapping(value = "/profiles")
+@org.springframework.context.annotation.Profile("classic")
 public class ProfileRestController {
 
   private ProfileService profileService;
@@ -32,6 +35,7 @@ public class ProfileRestController {
   Publisher<Profile> getAll() {
     log.info("get all command");
     return this.profileService.all();
+    
   }
 
   @GetMapping("/{id}")
@@ -42,7 +46,7 @@ public class ProfileRestController {
   @PostMapping
   Publisher<ResponseEntity<Profile>> create(@RequestBody Profile profile) {
     return this.profileService.create(profile.getEmail())
-        .map(p -> ResponseEntity.created(URI.create("/profiles/" + p.getId())).build());
+        .map(p -> ResponseEntity.created(URI.create("/profiles/" + p.getId())).contentType(MediaType.APPLICATION_JSON).build());
   }
 
   @DeleteMapping("/{id}")
@@ -54,6 +58,6 @@ public class ProfileRestController {
   Publisher<ResponseEntity<Profile>> updateById(@PathVariable String id,
       @RequestBody Profile profile) {
     return Mono.just(profile).flatMap(p -> this.profileService.updateById(id, p.getEmail()))
-        .map(p -> ResponseEntity.ok().build());
+        .map(p -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).build());
   }
 }
